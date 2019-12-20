@@ -1,9 +1,6 @@
-var Snowflake = require("./index");
-
-let idWorker = new Snowflake(1, 1);
+var idWorker = require("../index");
 let id = idWorker.nextId();
-console.log(`id:${id} ${id.toString()}`)
-
+console.log(id, id.toString())
 
 //约640-660ms
 //约850-1000ms
