@@ -4,16 +4,18 @@
 
 首先必须要修改默认的 `/config/config.js`,内容如下；
 
-worker_id是 `0-31`的机器ID（用来配置分布式的多机器，最多支持32个机器）
-
-datacenter_id 是 `0-31`的数据ID（用来配置某个机器下面的某某服务，每台机器最多支持32个服务）
-
 ```
 {
     worker_id: -1,
     datacenter_id: -1
 }
 ```
+
+worker_id 是 `0-31`的机器ID（用来配置分布式的多机器，最多支持32个机器）
+
+datacenter_id 是 `0-31`的数据ID（用来配置某个机器下面的某某服务，每台机器最多支持32个服务）
+
+之所以需要手动配置，是防止使用者误操作（没有做配置，会报错提醒你设置）；
 
 配置完以后，如下操作，返回是Bigint类型的ID
 
@@ -22,13 +24,13 @@ var idWorker = require("../index");
 let id = idWorker.nextId();//45386714578944n
 ```
 
+关于Bigint类型的说明，请参考：https://www.axihe.com/api/js-es/ob-bigint/overview.html
+
 ## 雪花算法
 
 网上搜到的方案基本是按照推特的方案（10位的数据机器位分成 5位机器ID + 5位数据ID ），目前代码按照这个方案来做的；
 
-代码是参考网上的一个 Java 版本的实现方案：https://www.cnblogs.com/relucent/p/4955340.html 编写的，
-
-这个Java方案的实现是参考：https://github.com/twitter-archive/snowflake
+方案的实现参考：https://github.com/twitter-archive/snowflake
 
 ## 名词说明
 
@@ -53,15 +55,18 @@ A-|--------------------B--------------------------|-------C-------|------D------
 
 加起来刚好64位，为一个Long型。
 
+## SnowFlake的优点
+
 SnowFlake的优点是，整体上按照时间自增排序，并且整个分布式系统内不会产生ID碰撞(由数据ID和机器ID作区分)，并且效率较高。
 
 理论1S内生成的ID数量是 1000*4096 = 4096000（四百零九万六千个）
 
-代码中使用Bigint实现，该类型在 **Node10.X** 版本才开始支持，返回出去的结果是Bigint转为String后的字符串类型，toString方法消耗总性能的三分之一时间；
+代码中使用Bigint实现，该类型在 **Node10.X** 版本才开始支持
 
 ## 性能测试
 
 ```
-     生成100W条ID，      约850-1000ms；  如果不toString后再转，  时间约 640-660ms
-     生成409.6WW条ID，   约3600-3850ms； 如果不toString后再转，  时间约约 2600-2800ms
+生成100W条ID，      时间约      640-660ms
+生成409.6WW条ID，   时间约约    2600-2800ms
 ```
+具体可以自己跑下本项目的test文件
